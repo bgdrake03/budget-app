@@ -1,60 +1,40 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { db } from './firebase'
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore'
+import { doc, updateDoc, collection, addDoc } from 'firebase/firestore'
 import { samplePaycheck } from './sampleData'
 
-function Dashboard({ user }) {
-  const [budget, setBudget] = useState(null)
+function Dashboard({ user, budget, onBudgetUpdate }) {
   const [selectedCategoryId, setSelectedCategoryId] = useState(null)
   const [spendAmount, setSpendAmount] = useState('')
-  const [loading, setLoading] = useState(true)
-
-  // Load budget data from Firestore when component mounts
-  useEffect(() => {
-    const loadBudget = async () => {
-      try {
-        const budgetRef = doc(db, 'users', user.uid, 'budgets', 'current')
-        const docSnap = await getDoc(budgetRef)
-
-        if (docSnap.exists()) {
-          // Budget exists, load it
-          setBudget(docSnap.data())
-        } else {
-          // No budget exists, create one with sample data
-          await setDoc(budgetRef, samplePaycheck)
-          setBudget(samplePaycheck)
-        }
-      } catch (error) {
-        console.error('Error loading budget:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadBudget()
-  }, [user.uid])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [showNewPaycheck, setShowNewPaycheck] = useState(false)
 
   const handleSpend = async (categoryId, amount) => {
-    if (!budget) return
+    setLoading(true)
+    setError('')
 
-    const updatedBudget = JSON.parse(JSON.stringify(budget))
-
-    updatedBudget.buckets.forEach(bucket => {
-      bucket.categories.forEach(category => {
-        if (category.id === categoryId) {
-          category.spent += amount
-        }
-      })
-    })
-
-    setBudget(updatedBudget)
-
-    // Save to Firestore
     try {
-      const budgetRef = doc(db, 'users', user.uid, 'budgets', 'current')
-      await updateDoc(budgetRef, updatedBudget)
-    } catch (error) {
-      console.error('Error saving budget:', error)
+      const updatedBuckets = budget.buckets.map(bucket => ({
+        ...bucket,
+        categories: bucket.categories.map(category => {
+          if (category.id === categoryId) {
+            return { ...category, spent: category.spent + amount }
+          }
+          return category
+        })
+      }))
+
+      const budgetRef = doc(db, 'users', user.uid, 'budgets', budget.id)
+      await updateDoc(budgetRef, {
+        buckets: updatedBuckets
+      })
+
+      onBudgetUpdate()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -62,7 +42,7 @@ function Dashboard({ user }) {
     e.preventDefault()
 
     if (!selectedCategoryId || !spendAmount) {
-      alert('Please select a category and enter an amount')
+      setError('Please select a category and enter an amount')
       return
     }
 
@@ -71,18 +51,21 @@ function Dashboard({ user }) {
     setSelectedCategoryId(null)
   }
 
-  if (loading) {
-    return <p>Loading your budget...</p>
-  }
-
-  if (!budget) {
-    return <p>Error loading budget</p>
-  }
-
   return (
     <div>
       <h1>Budget Dashboard</h1>
       <p>Total Income: ${budget.amount.toFixed(2)}</p>
+      
+      <button onClick={() => setShowNewPaycheck(!showNewPaycheck)} style={{ marginBottom: '20px' }}>
+        New Paycheck
+      </button>
+
+      {showNewPaycheck && (
+        <NewPaycheckForm user={user} onPaycheckCreated={() => {
+          setShowNewPaycheck(false)
+          onBudgetUpdate()
+        }} />
+      )}
 
       {/* SPENDING FORM */}
       <div style={{ marginBottom: '20px', padding: '10px', border: '1px solid gray' }}>
@@ -109,11 +92,15 @@ function Dashboard({ user }) {
               value={spendAmount}
               onChange={(e) => setSpendAmount(e.target.value)}
               placeholder="0.00"
+              step="0.01"
             />
           </div>
 
-          <button type="submit">Log Spending</button>
+          <button type="submit" disabled={loading}>
+            {loading ? 'Saving...' : 'Log Spending'}
+          </button>
         </form>
+        {error && <p style={{ color: 'red' }}>{error}</p>}
       </div>
 
       {/* BUDGET DISPLAY */}
@@ -133,6 +120,68 @@ function Dashboard({ user }) {
           </div>
         ))}
       </div>
+    </div>
+  )
+}
+
+function NewPaycheckForm({ user, onPaycheckCreated }) {
+  const [amount, setAmount] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+
+    try {
+      const paycheckAmount = parseFloat(amount)
+      if (!paycheckAmount || paycheckAmount <= 0) {
+        setError('Please enter a valid amount')
+        return
+      }
+
+      const newBudget = {
+        amount: paycheckAmount,
+        date: new Date(),
+        status: 'active',
+        buckets: samplePaycheck.buckets.map(bucket => ({
+          ...bucket,
+          amount: (bucket.percentage / 100) * paycheckAmount,
+          categories: bucket.categories.map(category => ({
+            ...category,
+            spent: 0
+          }))
+        }))
+      }
+
+      await addDoc(collection(db, 'users', user.uid, 'budgets'), newBudget)
+
+      setAmount('')
+      onPaycheckCreated()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div style={{ marginBottom: '20px', padding: '10px', border: '1px solid blue' }}>
+      <h3>Create New Paycheck</h3>
+      <form onSubmit={handleSubmit}>
+        <input
+          type="number"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="Paycheck amount"
+          step="0.01"
+        />
+        <button type="submit" disabled={loading}>
+          {loading ? 'Creating...' : 'Create'}
+        </button>
+      </form>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
     </div>
   )
 }
