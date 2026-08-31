@@ -10,6 +10,9 @@ function Dashboard({ user, budget, onBudgetUpdate }) {
   const [error, setError] = useState('')
 
   const getCategoryStatus = (category) => {
+    if (category.allocated === 0) {
+      return 'not-allocated'
+    }
     if (category.spent > category.allocated) {
       return 'overdrawn'
     } else if (category.spent >= category.allocated * 0.75) {
@@ -23,11 +26,16 @@ function Dashboard({ user, budget, onBudgetUpdate }) {
       case 'overdrawn': return '#EC4899'
       case 'warning': return '#F59E0B'
       case 'healthy': return '#10B981'
+      case 'not-allocated': return '#9CA3AF'
       default: return '#6B7280'
     }
   }
 
   const getStatusMessage = (category) => {
+    if (category.allocated === 0) {
+      return 'Not allocated'
+    }
+
     const status = getCategoryStatus(category)
     const remaining = category.allocated - category.spent
 
