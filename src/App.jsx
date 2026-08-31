@@ -7,6 +7,7 @@ import Dashboard from './Dashboard'
 import AllocateBudget from './AllocateBudget'
 import PaycheckHistory from './PaycheckHistory'
 import EditPaycheck from './EditPaycheck'
+import TransactionHistory from './TransactionHistory'
 import { samplePaycheck } from './sampleData'
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [showPaycheckHistory, setShowPaycheckHistory] = useState(false)
   const [editingPaycheck, setEditingPaycheck] = useState(null)
+  const [showTransactionHistory, setShowTransactionHistory] = useState(false)
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -141,6 +143,11 @@ function App() {
         <div>
           {budgetLoading ? (
             <p>Loading budget...</p>
+          ) : showTransactionHistory ? (
+            <TransactionHistory
+              user={user}
+              onBack={() => setShowTransactionHistory(false)}
+            />
           ) : editingPaycheck ? (
             <EditPaycheck
               user={user}
@@ -189,6 +196,9 @@ function App() {
               </button>
               <button onClick={() => setShowPaycheckHistory(true)} style={{ marginTop: '20px', marginRight: '10px' }}>
                 Paycheck History
+              </button>
+              <button onClick={() => setShowTransactionHistory(true)} style={{ marginTop: '20px', marginRight: '10px' }}>
+                Transaction History
               </button>
               <button onClick={clearAllData} style={{ marginTop: '20px', marginRight: '10px', backgroundColor: '#ff6b6b', color: 'white' }}>
                 Clear All Data (Testing)

@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { db } from './firebase'
-import { doc, updateDoc } from 'firebase/firestore'
+import { doc, updateDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore'
 
 function Dashboard({ user, budget, onBudgetUpdate }) {
   const [selectedCategoryId, setSelectedCategoryId] = useState(null)
   const [spendAmount, setSpendAmount] = useState('')
+  const [spendNote, setSpendNote] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -13,6 +14,26 @@ function Dashboard({ user, budget, onBudgetUpdate }) {
     setError('')
 
     try {
+      // Find the category to get its name
+      let categoryName = ''
+      budget.buckets.forEach(bucket => {
+        const category = bucket.categories.find(c => c.id === categoryId)
+        if (category) categoryName = category.name
+      })
+
+      // Create transaction document
+      await addDoc(
+        collection(db, 'users', user.uid, 'budgets', budget.id, 'transactions'),
+        {
+          categoryId: categoryId,
+          categoryName: categoryName,
+          amount: amount,
+          note: spendNote,
+          date: serverTimestamp()
+        }
+      )
+
+      // Update budget with new spent amount
       const updatedBuckets = budget.buckets.map(bucket => ({
         ...bucket,
         categories: bucket.categories.map(category => {
@@ -46,6 +67,7 @@ function Dashboard({ user, budget, onBudgetUpdate }) {
 
     handleSpend(selectedCategoryId, parseFloat(spendAmount))
     setSpendAmount('')
+    setSpendNote('')
     setSelectedCategoryId(null)
   }
 
@@ -80,6 +102,16 @@ function Dashboard({ user, budget, onBudgetUpdate }) {
               onChange={(e) => setSpendAmount(e.target.value)}
               placeholder="0.00"
               step="0.01"
+            />
+          </div>
+
+          <div>
+            <label>Note (optional): </label>
+            <input
+              type="text"
+              value={spendNote}
+              onChange={(e) => setSpendNote(e.target.value)}
+              placeholder="e.g., Walmart groceries"
             />
           </div>
 
