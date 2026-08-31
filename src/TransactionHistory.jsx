@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { db } from './firebase'
 import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore'
 
-function TransactionHistory({ user, onBack }) {
+function TransactionHistory({ user, onBack, onSelectTransaction }) {
   const [transactions, setTransactions] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -100,12 +100,20 @@ function TransactionHistory({ user, onBack }) {
                     Paycheck: ${transaction.budgetAmount.toFixed(2)}
                   </p>
                 </div>
-                <button
-                  onClick={() => handleDelete(transaction.budgetId, transaction.id)}
-                  style={{ backgroundColor: '#ff6b6b', color: 'white', padding: '5px 10px', cursor: 'pointer' }}
-                >
-                  Delete
-                </button>
+                <div>
+                  <button
+                    onClick={() => onSelectTransaction(transaction)}
+                    style={{ backgroundColor: '#4CAF50', color: 'white', padding: '5px 10px', marginRight: '5px', cursor: 'pointer' }}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(transaction.budgetId, transaction.id)}
+                    style={{ backgroundColor: '#ff6b6b', color: 'white', padding: '5px 10px', cursor: 'pointer' }}
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             </div>
           ))}

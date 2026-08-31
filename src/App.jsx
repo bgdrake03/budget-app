@@ -8,6 +8,7 @@ import AllocateBudget from './AllocateBudget'
 import PaycheckHistory from './PaycheckHistory'
 import EditPaycheck from './EditPaycheck'
 import TransactionHistory from './TransactionHistory'
+import EditTransaction from './EditTransaction'
 import { samplePaycheck } from './sampleData'
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
   const [showPaycheckHistory, setShowPaycheckHistory] = useState(false)
   const [editingPaycheck, setEditingPaycheck] = useState(null)
   const [showTransactionHistory, setShowTransactionHistory] = useState(false)
+  const [editingTransaction, setEditingTransaction] = useState(null)
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -143,10 +145,21 @@ function App() {
         <div>
           {budgetLoading ? (
             <p>Loading budget...</p>
+          ) : editingTransaction ? (
+            <EditTransaction
+              user={user}
+              transaction={editingTransaction}
+              onSave={() => {
+                setEditingTransaction(null)
+                loadUserBudget(user.uid)
+              }}
+              onBack={() => setEditingTransaction(null)}
+            />
           ) : showTransactionHistory ? (
             <TransactionHistory
               user={user}
               onBack={() => setShowTransactionHistory(false)}
+              onSelectTransaction={(transaction) => setEditingTransaction(transaction)}
             />
           ) : editingPaycheck ? (
             <EditPaycheck
