@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 import { db } from './firebase'
-import { collection, getDocs } from 'firebase/firestore'
+import { collection, getDocs, doc, updateDoc } from 'firebase/firestore'
 
 function PaycheckHistory({ user, onSelectPaycheck, onBack }) {
   const [paychecks, setPaychecks] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [updating, setUpdating] = useState(false)
 
   useEffect(() => {
     loadPaychecks()
@@ -27,6 +28,27 @@ function PaycheckHistory({ user, onSelectPaycheck, onBack }) {
       setError(err.message)
     }
     setLoading(false)
+  }
+
+  const handleSetCurrent = async (paycheck) => {
+    setUpdating(true)
+    try {
+      // Set all paychecks to isCurrent: false
+      for (const p of paychecks) {
+        const budgetRef = doc(db, 'users', user.uid, 'budgets', p.id)
+        await updateDoc(budgetRef, { isCurrent: false })
+      }
+
+      // Set this paycheck to isCurrent: true
+      const budgetRef = doc(db, 'users', user.uid, 'budgets', paycheck.id)
+      await updateDoc(budgetRef, { isCurrent: true })
+
+      // Reload the list
+      await loadPaychecks()
+    } catch (err) {
+      setError(err.message)
+    }
+    setUpdating(false)
   }
 
   if (loading) return <p>Loading paychecks...</p>
@@ -57,19 +79,24 @@ function PaycheckHistory({ user, onSelectPaycheck, onBack }) {
             >
               <h3>
                 ${paycheck.amount.toFixed(2)} {' '}
-                <span style={{ fontSize: '14px', color: paycheck.status === 'active' ? 'green' : 'gray' }}>
-                  ({paycheck.status})
+                <span style={{ fontSize: '14px', color: paycheck.isCurrent ? 'green' : 'gray' }}>
+                  ({paycheck.isCurrent ? 'Current' : 'Inactive'})
                 </span>
               </h3>
               <p>
                 {paycheck.date?.toDate?.()?.toLocaleDateString() || 'Date not available'}
               </p>
-              <button onClick={(e) => {
-                e.stopPropagation()
-                onSelectPaycheck(paycheck)
-              }}>
-                Edit
-              </button>
+              <div>
+                <button onClick={() => handleSetCurrent(paycheck)} style={{ marginRight: '5px', backgroundColor: paycheck.isCurrent ? '#4CAF50' : '#2196F3', color: 'white', cursor: 'pointer' }} disabled={updating}>
+                  {paycheck.isCurrent ? '✓ Current' : 'Set as Current'}
+                </button>
+                <button onClick={(e) => {
+                  e.stopPropagation()
+                  onSelectPaycheck(paycheck)
+                }} style={{ marginRight: '5px' }}>
+                  Edit
+                </button>
+              </div>
             </div>
           ))}
         </div>

@@ -43,7 +43,7 @@ function App() {
     try {
       const q = query(
         collection(db, 'users', userId, 'budgets'),
-        where('status', '==', 'active')
+        where('isCurrent', '==', true)
       )
       const snapshot = await getDocs(q)
       
@@ -99,6 +99,7 @@ function App() {
         amount: amount,
         date: serverTimestamp(),
         status: 'pending_allocation',
+        isCurrent: true,
         buckets: bucketsToUse.map(bucket => ({
           id: bucket.id,
           name: bucket.name,
