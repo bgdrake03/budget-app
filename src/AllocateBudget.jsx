@@ -71,11 +71,13 @@ function AllocateBudget({ user, paycheck, onAllocationComplete }) {
         categories: bucket.categories.map(category => {
           const type = category.type || 'spending'
           const updated = {
-            ...category,
-            type,
-            allocated: allocations[bucket.id][category.id] || 0
+            id: category.id,
+            name: category.name,
+            allocated: allocations[bucket.id][category.id] || 0,
+            spent: category.spent || 0,
+            type
           }
-          if (type === 'savings' && category.goal !== undefined) {
+          if (type === 'savings' && typeof category.goal === 'number') {
             updated.goal = category.goal
           }
           return updated
