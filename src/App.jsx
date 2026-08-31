@@ -27,6 +27,7 @@ function App() {
   const [editingTransaction, setEditingTransaction] = useState(null)
   const [showCategoryManager, setShowCategoryManager] = useState(false)
   const [showAdjustSpending, setShowAdjustSpending] = useState(false)
+  const [bucketAmounts, setBucketAmounts] = useState({})
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -120,6 +121,13 @@ function App() {
       return
     }
 
+    // Validate bucket amounts
+    const totalBuckets = Object.values(bucketAmounts).reduce((sum, val) => sum + (parseFloat(val) || 0), 0)
+    if (Math.abs(totalBuckets - amount) > 0.01) {
+      alert(`Bucket amounts must equal paycheck total. Total: $${totalBuckets.toFixed(2)}, Paycheck: $${amount.toFixed(2)}`)
+      return
+    }
+
     try {
       // Load custom categories or use defaults
       let bucketsToUse = samplePaycheck.buckets
@@ -136,7 +144,7 @@ function App() {
         console.log('Using default categories')
       }
 
-      // Create new paycheck with allocated amounts set to 0
+      // Create new paycheck using entered bucket amounts
       const paycheckData = {
         amount: amount,
         date: serverTimestamp(),
@@ -146,7 +154,7 @@ function App() {
           id: bucket.id,
           name: bucket.name,
           percentage: bucket.percentage,
-          amount: (bucket.percentage / 100) * amount,
+          amount: parseFloat(bucketAmounts[bucket.id]) || 0,
           categories: bucket.categories.map(category => ({
             ...category,
             allocated: 0,
@@ -167,6 +175,7 @@ function App() {
         ...paycheckData
       })
       setPaycheckAmount('')
+      setBucketAmounts({})
     } catch (err) {
       alert('Error creating paycheck: ' + err.message)
     }
@@ -260,11 +269,11 @@ function App() {
           ) : newPaycheck ? (
             <AllocateBudget user={user} paycheck={newPaycheck} onAllocationComplete={handleAllocationComplete} />
           ) : showCreateForm ? (
-            <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px' }}>
+            <div style={{ maxWidth: '500px', margin: '30px auto', padding: '20px' }}>
               <h1>Budget App</h1>
               <h2>Create New Paycheck</h2>
               <form onSubmit={handleCreatePaycheck}>
-                <div>
+                <div style={{ marginBottom: '20px' }}>
                   <label>Paycheck Amount: $</label>
                   <input
                     type="number"
@@ -274,8 +283,30 @@ function App() {
                     step="0.01"
                   />
                 </div>
+
+                <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#f9fafb', borderRadius: '8px' }}>
+                  <p style={{ margin: '0 0 15px 0', fontWeight: 500 }}>Split into buckets:</p>
+                  {samplePaycheck.buckets.map((bucket) => (
+                    <div key={bucket.id} style={{ marginBottom: '12px' }}>
+                      <label style={{ fontSize: '14px' }}>{bucket.name}: $</label>
+                      <input
+                        type="number"
+                        value={bucketAmounts[bucket.id] || ''}
+                        onChange={(e) => setBucketAmounts(prev => ({ ...prev, [bucket.id]: e.target.value }))}
+                        placeholder="0.00"
+                        step="0.01"
+                        style={{ marginLeft: '5px', width: '120px' }}
+                      />
+                    </div>
+                  ))}
+                </div>
+
                 <button type="submit">Create Paycheck</button>
-                <button type="button" onClick={() => setShowCreateForm(false)} style={{ marginLeft: '10px' }}>
+                <button type="button" onClick={() => {
+                  setShowCreateForm(false)
+                  setBucketAmounts({})
+                  setPaycheckAmount('')
+                }} style={{ marginLeft: '10px' }}>
                   Cancel
                 </button>
               </form>
@@ -308,11 +339,11 @@ function App() {
               </div>
             </>
           ) : (
-            <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px' }}>
+            <div style={{ maxWidth: '500px', margin: '30px auto', padding: '20px' }}>
               <h1>Budget App</h1>
               <h2>Create New Paycheck</h2>
               <form onSubmit={handleCreatePaycheck}>
-                <div>
+                <div style={{ marginBottom: '20px' }}>
                   <label>Paycheck Amount: $</label>
                   <input
                     type="number"
@@ -322,6 +353,24 @@ function App() {
                     step="0.01"
                   />
                 </div>
+
+                <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#f9fafb', borderRadius: '8px' }}>
+                  <p style={{ margin: '0 0 15px 0', fontWeight: 500 }}>Split into buckets:</p>
+                  {samplePaycheck.buckets.map((bucket) => (
+                    <div key={bucket.id} style={{ marginBottom: '12px' }}>
+                      <label style={{ fontSize: '14px' }}>{bucket.name}: $</label>
+                      <input
+                        type="number"
+                        value={bucketAmounts[bucket.id] || ''}
+                        onChange={(e) => setBucketAmounts(prev => ({ ...prev, [bucket.id]: e.target.value }))}
+                        placeholder="0.00"
+                        step="0.01"
+                        style={{ marginLeft: '5px', width: '120px' }}
+                      />
+                    </div>
+                  ))}
+                </div>
+
                 <button type="submit">Create Paycheck</button>
               </form>
             </div>
