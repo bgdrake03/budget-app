@@ -15,9 +15,9 @@ function Dashboard({ user, budget, onBudgetUpdate }) {
     if (isSavings) {
       if (!category.goal) return 'not-allocated'
       const goalProgress = category.allocated / category.goal
-      if (goalProgress >= 1) return 'healthy'
-      if (goalProgress >= 0.75) return 'warning'
-      return 'healthy'
+      if (goalProgress >= 0.75) return 'healthy'
+      if (goalProgress >= 0.5) return 'warning'
+      return 'poor'
     }
 
     if (category.allocated === 0) {
@@ -33,9 +33,10 @@ function Dashboard({ user, budget, onBudgetUpdate }) {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'overdrawn': return '#EC4899'
-      case 'warning': return '#F59E0B'
       case 'healthy': return '#10B981'
+      case 'warning': return '#F59E0B'
+      case 'poor': return '#EF4444'
+      case 'overdrawn': return '#EF4444'
       case 'not-allocated': return '#9CA3AF'
       default: return '#6B7280'
     }
@@ -51,7 +52,7 @@ function Dashboard({ user, budget, onBudgetUpdate }) {
       if (percentProgress >= 100) {
         return `✓ Goal reached! +$${Math.abs(remaining).toFixed(2)}`
       }
-      return `$${remaining.toFixed(2)} toward goal`
+      return `${percentProgress}% toward goal`
     }
 
     if (category.allocated === 0) {
