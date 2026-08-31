@@ -123,7 +123,17 @@ function Dashboard({ user, budget, onBudgetUpdate }) {
         ...bucket,
         categories: bucket.categories.map(category => {
           if (category.id === categoryId) {
-            return { ...category, spent: category.spent + amount }
+            const updated = {
+              id: category.id,
+              name: category.name,
+              allocated: category.allocated,
+              spent: category.spent + amount,
+              type: category.type || 'spending'
+            }
+            if (category.type === 'savings' && typeof category.goal === 'number') {
+              updated.goal = category.goal
+            }
+            return updated
           }
           return category
         })
