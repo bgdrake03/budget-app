@@ -10,6 +10,7 @@ import EditPaycheck from './EditPaycheck'
 import TransactionHistory from './TransactionHistory'
 import EditTransaction from './EditTransaction'
 import CategoryManager from './CategoryManager'
+import AdjustSpending from './AdjustSpending'
 import { samplePaycheck } from './sampleData'
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
   const [showTransactionHistory, setShowTransactionHistory] = useState(false)
   const [editingTransaction, setEditingTransaction] = useState(null)
   const [showCategoryManager, setShowCategoryManager] = useState(false)
+  const [showAdjustSpending, setShowAdjustSpending] = useState(false)
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -205,6 +207,16 @@ function App() {
         <div>
           {budgetLoading ? (
             <p>Loading budget...</p>
+          ) : showAdjustSpending ? (
+            <AdjustSpending
+              user={user}
+              budget={budget}
+              onBack={() => setShowAdjustSpending(false)}
+              onSave={() => {
+                setShowAdjustSpending(false)
+                loadUserBudget(user.uid)
+              }}
+            />
           ) : showCategoryManager ? (
             <CategoryManager
               user={user}
@@ -280,6 +292,9 @@ function App() {
                 </button>
                 <button onClick={() => setShowTransactionHistory(true)}>
                   Transaction History
+                </button>
+                <button onClick={() => setShowAdjustSpending(true)}>
+                  Adjust Spending
                 </button>
                 <button onClick={() => setShowCategoryManager(true)}>
                   Manage Categories
