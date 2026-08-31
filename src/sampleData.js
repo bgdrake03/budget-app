@@ -7,7 +7,8 @@ export const samplePaycheck = {
       percentage: 30,
       amount: 64.73,
       categories: [
-        { id: 1, name: "Checking and Free Spending", allocated: 0, spent: 0 }
+        { id: 1, name: "Checking and Free Spending", allocated: 0, spent: 0 },
+        { id: 100, name: "Free Spending", allocated: 0, spent: 0 }
       ]
     },
     {
@@ -38,7 +39,8 @@ export const samplePaycheck = {
       percentage: 25,
       amount: 53.94,
       categories: [
-        { id: 16, name: "Car Payment and Savings", allocated: 0, spent: 0 }
+        { id: 16, name: "Car Payment and Savings", allocated: 0, spent: 0 },
+        { id: 101, name: "Car Savings", allocated: 0, spent: 0 }
       ]
     },
     {
