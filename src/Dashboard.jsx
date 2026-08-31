@@ -65,7 +65,33 @@ function Dashboard({ user, budget, onBudgetUpdate }) {
       return
     }
 
-    handleSpend(selectedCategoryId, parseFloat(spendAmount))
+    const amount = parseFloat(spendAmount)
+
+    // Find the category to check remaining balance
+    let category = null
+    budget.buckets.forEach(bucket => {
+      const found = bucket.categories.find(c => c.id === selectedCategoryId)
+      if (found) category = found
+    })
+
+    if (category) {
+      const remaining = category.allocated - category.spent
+      if (amount > remaining) {
+        const confirmOverspend = window.confirm(
+          `⚠️ Warning: You only have $${remaining.toFixed(2)} remaining in "${category.name}".
+
+You are about to spend $${amount.toFixed(2)}, which exceeds your budget.
+
+Would you like to proceed anyway? (You can re-allocate your budget later.)`
+        )
+
+        if (!confirmOverspend) {
+          return
+        }
+      }
+    }
+
+    handleSpend(selectedCategoryId, amount)
     setSpendAmount('')
     setSpendNote('')
     setSelectedCategoryId(null)
