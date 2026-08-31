@@ -58,6 +58,13 @@ p {
 #root {
   min-height: 100vh;
   padding: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+#root > div {
+  width: 100%;
+  max-width: 900px;
 }
 
 /* Buttons */
@@ -134,6 +141,38 @@ div[style*="border: 1px solid"] {
   padding: 20px;
   box-shadow: var(--shadow);
   margin-bottom: 20px;
+}
+
+/* Lists - Remove bullets */
+ul, ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+li {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+li:last-child {
+  border-bottom: none;
+}
+
+/* Text alignment */
+h1, h2, h3 {
+  text-align: center;
+}
+
+/* Button group */
+div:has(> button) {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 /* Responsive */
