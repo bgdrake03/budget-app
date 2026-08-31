@@ -215,7 +215,13 @@ div:has(> button) {
   .dashboard-buckets {
     display: grid;
     grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
     gap: 20px;
+  }
+
+  /* Budgeting Needs (2nd bucket) spans all rows on right */
+  .dashboard-buckets > div:nth-child(2) {
+    grid-row: 1 / 4;
   }
 }
 
