@@ -9,6 +9,53 @@ function Dashboard({ user, budget, onBudgetUpdate }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  const getCategoryStatus = (category) => {
+    if (category.spent > category.allocated) {
+      return 'overdrawn'
+    } else if (category.spent >= category.allocated * 0.75) {
+      return 'warning'
+    }
+    return 'healthy'
+  }
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'overdrawn': return '#EC4899'
+      case 'warning': return '#F59E0B'
+      case 'healthy': return '#10B981'
+      default: return '#6B7280'
+    }
+  }
+
+  const getStatusMessage = (category) => {
+    const status = getCategoryStatus(category)
+    const remaining = category.allocated - category.spent
+
+    if (status === 'overdrawn') {
+      return `⚠️ $${Math.abs(remaining).toFixed(2)} over`
+    } else if (status === 'warning') {
+      const percentSpent = Math.round((category.spent / category.allocated) * 100)
+      return `⚠️ ${percentSpent}% spent`
+    }
+    return `$${remaining.toFixed(2)} remaining`
+  }
+
+  const isBudgetBalanced = () => {
+    for (const bucket of budget.buckets) {
+      for (const category of bucket.categories) {
+        if (category.spent > category.allocated) {
+          return false
+        }
+      }
+    }
+    return true
+  }
+
+  const getSpentPercentage = (category) => {
+    if (category.allocated === 0) return 0
+    return Math.min((category.spent / category.allocated) * 100, 120)
+  }
+
   const handleSpend = async (categoryId, amount) => {
     setLoading(true)
     setError('')
@@ -100,7 +147,12 @@ Would you like to proceed anyway? (You can re-allocate your budget later.)`
   return (
     <div>
       <h1>Budget Dashboard</h1>
-      <p>Total Income: ${budget.amount.toFixed(2)}</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <p>Total Income: ${budget.amount.toFixed(2)}</p>
+        <div style={{ backgroundColor: isBudgetBalanced() ? '#10B981' : '#F59E0B', color: 'white', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '500' }}>
+          {isBudgetBalanced() ? '✓ Balanced' : '⚠️ Needs Reallocation'}
+        </div>
+      </div>
 
       <div className="dashboard-layout">
         {/* SPENDING FORM */}
@@ -158,13 +210,41 @@ Would you like to proceed anyway? (You can re-allocate your budget later.)`
               <h2>{bucket.name}</h2>
               <p>Total: ${bucket.amount.toFixed(2)}</p>
 
-              <ul>
-                {bucket.categories.map((category) => (
-                  <li key={category.id}>
-                    {category.name}: ${category.allocated} (Spent: ${category.spent}, Remaining: ${category.allocated - category.spent})
-                  </li>
-                ))}
-              </ul>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', listStyle: 'none', padding: 0, margin: 0 }}>
+                {bucket.categories.map((category) => {
+                  const status = getCategoryStatus(category)
+                  const color = getStatusColor(status)
+                  const statusMessage = getStatusMessage(category)
+                  const percentage = getSpentPercentage(category)
+
+                  return (
+                    <div
+                      key={category.id}
+                      style={{
+                        backgroundColor: 'var(--surface-2)',
+                        borderRadius: '8px',
+                        padding: '12px',
+                        borderLeft: `4px solid ${color}`
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <p style={{ fontSize: '14px', fontWeight: '500', margin: 0, color: 'var(--text-primary)' }}>
+                          {category.name}
+                        </p>
+                        <p style={{ fontSize: '13px', color: color, fontWeight: '500', margin: 0 }}>
+                          {statusMessage}
+                        </p>
+                      </div>
+                      <div style={{ backgroundColor: 'var(--surface-1)', height: '6px', borderRadius: '3px', overflow: 'hidden', marginBottom: '6px' }}>
+                        <div style={{ width: `${Math.min(percentage, 100)}%`, height: '100%', backgroundColor: color }}></div>
+                      </div>
+                      <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>
+                        ${category.spent.toFixed(2)} / ${category.allocated.toFixed(2)}
+                      </p>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           ))}
         </div>
