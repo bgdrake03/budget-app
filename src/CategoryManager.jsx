@@ -3,7 +3,7 @@ import { db } from './firebase'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { samplePaycheck } from './sampleData'
 
-function CategoryManager({ user, onBack }) {
+function CategoryManager({ user, onBack, onCategoriesUpdate }) {
   const [categories, setCategories] = useState(null)
   const [newCategoryName, setNewCategoryName] = useState({})
   const [loading, setLoading] = useState(true)
@@ -136,6 +136,9 @@ function CategoryManager({ user, onBack }) {
       const settingsRef = doc(db, 'users', user.uid, 'settings', 'categories')
       await setDoc(settingsRef, { buckets: updatedCategories })
       setError('')
+      if (onCategoriesUpdate) {
+        onCategoriesUpdate()
+      }
     } catch (err) {
       setError(err.message)
     }

@@ -169,6 +169,7 @@ function App() {
             <CategoryManager
               user={user}
               onBack={() => setShowCategoryManager(false)}
+              onCategoriesUpdate={() => loadUserBudget(user.uid)}
             />
           ) : editingTransaction ? (
             <EditTransaction
