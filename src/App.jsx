@@ -5,6 +5,8 @@ import { collection, query, where, getDocs, addDoc, serverTimestamp } from 'fire
 import Login from './Login'
 import Dashboard from './Dashboard'
 import AllocateBudget from './AllocateBudget'
+import PaycheckHistory from './PaycheckHistory'
+import EditPaycheck from './EditPaycheck'
 import { samplePaycheck } from './sampleData'
 
 function App() {
@@ -15,6 +17,8 @@ function App() {
   const [newPaycheck, setNewPaycheck] = useState(null)
   const [paycheckAmount, setPaycheckAmount] = useState('')
   const [showCreateForm, setShowCreateForm] = useState(false)
+  const [showPaycheckHistory, setShowPaycheckHistory] = useState(false)
+  const [editingPaycheck, setEditingPaycheck] = useState(null)
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -117,6 +121,23 @@ function App() {
         <div>
           {budgetLoading ? (
             <p>Loading budget...</p>
+          ) : editingPaycheck ? (
+            <EditPaycheck
+              user={user}
+              paycheck={editingPaycheck}
+              onSave={() => {
+                setEditingPaycheck(null)
+                setShowPaycheckHistory(false)
+                loadUserBudget(user.uid)
+              }}
+              onBack={() => setEditingPaycheck(null)}
+            />
+          ) : showPaycheckHistory ? (
+            <PaycheckHistory
+              user={user}
+              onSelectPaycheck={(paycheck) => setEditingPaycheck(paycheck)}
+              onBack={() => setShowPaycheckHistory(false)}
+            />
           ) : newPaycheck ? (
             <AllocateBudget user={user} paycheck={newPaycheck} onAllocationComplete={handleAllocationComplete} />
           ) : showCreateForm ? (
@@ -145,6 +166,9 @@ function App() {
               <Dashboard user={user} budget={budget} onBudgetUpdate={() => loadUserBudget(user.uid)} />
               <button onClick={() => setShowCreateForm(true)} style={{ marginTop: '20px', marginRight: '10px' }}>
                 New Paycheck
+              </button>
+              <button onClick={() => setShowPaycheckHistory(true)} style={{ marginTop: '20px', marginRight: '10px' }}>
+                Paycheck History
               </button>
               <button onClick={handleLogout}>
                 Log Out
