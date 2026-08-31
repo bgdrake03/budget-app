@@ -71,11 +71,15 @@ function App() {
                     const settingsCategory = settingsBucket.categories.find(sc => sc.id === category.id)
                     if (!settingsCategory) return category
 
-                    return {
+                    const type = settingsCategory.type || 'spending'
+                    const updated = {
                       ...category,
-                      type: settingsCategory.type || 'spending',
-                      goal: settingsCategory.goal
+                      type
                     }
+                    if (type === 'savings' && typeof settingsCategory.goal === 'number') {
+                      updated.goal = settingsCategory.goal
+                    }
+                    return updated
                   })
                 }
               })
