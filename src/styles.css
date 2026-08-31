@@ -195,6 +195,38 @@ div:has(> button) {
   flex-wrap: wrap;
 }
 
+/* Dashboard Layout */
+.dashboard-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.dashboard-form {
+  flex: 1;
+}
+
+.dashboard-buckets {
+  flex: 1;
+}
+
+/* Desktop Layout - Side by Side */
+@media (min-width: 1024px) {
+  .dashboard-layout {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .dashboard-form {
+    flex: 0 0 35%;
+    min-width: 300px;
+  }
+
+  .dashboard-buckets {
+    flex: 0 0 65%;
+  }
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   body {

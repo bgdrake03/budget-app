@@ -76,68 +76,72 @@ function Dashboard({ user, budget, onBudgetUpdate }) {
       <h1>Budget Dashboard</h1>
       <p>Total Income: ${budget.amount.toFixed(2)}</p>
 
-      {/* SPENDING FORM */}
-      <div style={{ marginBottom: '20px', padding: '10px', border: '1px solid gray' }}>
-        <h3>Log Spending</h3>
-        <form onSubmit={handleSubmitSpending}>
-          <div>
-            <label>Category: </label>
-            <select value={selectedCategoryId || ''} onChange={(e) => setSelectedCategoryId(Number(e.target.value))}>
-              <option value="">-- Select a category --</option>
-              {budget.buckets.map(bucket =>
-                bucket.categories.map(category => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))
-              )}
-            </select>
+      <div className="dashboard-layout">
+        {/* SPENDING FORM */}
+        <div className="dashboard-form">
+          <div style={{ marginBottom: '20px', padding: '10px', border: '1px solid gray' }}>
+            <h3>Log Spending</h3>
+            <form onSubmit={handleSubmitSpending}>
+              <div>
+                <label>Category: </label>
+                <select value={selectedCategoryId || ''} onChange={(e) => setSelectedCategoryId(Number(e.target.value))}>
+                  <option value="">-- Select a category --</option>
+                  {budget.buckets.map(bucket =>
+                    bucket.categories.map(category => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))
+                  )}
+                </select>
+              </div>
+
+              <div>
+                <label>Amount: $</label>
+                <input
+                  type="number"
+                  value={spendAmount}
+                  onChange={(e) => setSpendAmount(e.target.value)}
+                  placeholder="0.00"
+                  step="0.01"
+                />
+              </div>
+
+              <div>
+                <label>Note (optional): </label>
+                <input
+                  type="text"
+                  value={spendNote}
+                  onChange={(e) => setSpendNote(e.target.value)}
+                  placeholder="e.g., Walmart groceries"
+                />
+              </div>
+
+              <button type="submit" disabled={loading}>
+                {loading ? 'Saving...' : 'Log Spending'}
+              </button>
+            </form>
+            {error && <p style={{ color: '#EC4899' }}>{error}</p>}
           </div>
+        </div>
 
-          <div>
-            <label>Amount: $</label>
-            <input
-              type="number"
-              value={spendAmount}
-              onChange={(e) => setSpendAmount(e.target.value)}
-              placeholder="0.00"
-              step="0.01"
-            />
-          </div>
+        {/* BUDGET DISPLAY */}
+        <div className="dashboard-buckets">
+          {budget.buckets.map((bucket) => (
+            <div key={bucket.id} style={{ marginBottom: '20px', padding: '20px', border: '1px solid #e0e0e0', borderRadius: '12px', backgroundColor: '#ffffff', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
+              <h2>{bucket.name}</h2>
+              <p>Total: ${bucket.amount.toFixed(2)}</p>
 
-          <div>
-            <label>Note (optional): </label>
-            <input
-              type="text"
-              value={spendNote}
-              onChange={(e) => setSpendNote(e.target.value)}
-              placeholder="e.g., Walmart groceries"
-            />
-          </div>
-
-          <button type="submit" disabled={loading}>
-            {loading ? 'Saving...' : 'Log Spending'}
-          </button>
-        </form>
-        {error && <p style={{ color: '#EC4899' }}>{error}</p>}
-      </div>
-
-      {/* BUDGET DISPLAY */}
-      <div>
-        {budget.buckets.map((bucket) => (
-          <div key={bucket.id} style={{ marginBottom: '20px', padding: '20px', border: '1px solid #e0e0e0', borderRadius: '12px', backgroundColor: '#ffffff', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
-            <h2>{bucket.name}</h2>
-            <p>Total: ${bucket.amount.toFixed(2)}</p>
-
-            <ul>
-              {bucket.categories.map((category) => (
-                <li key={category.id}>
-                  {category.name}: ${category.allocated} (Spent: ${category.spent}, Remaining: ${category.allocated - category.spent})
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
+              <ul>
+                {bucket.categories.map((category) => (
+                  <li key={category.id}>
+                    {category.name}: ${category.allocated} (Spent: ${category.spent}, Remaining: ${category.allocated - category.spent})
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )
