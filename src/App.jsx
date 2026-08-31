@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { auth, db } from './firebase'
 import { onAuthStateChanged, signOut } from 'firebase/auth'
-import { collection, query, where, getDocs, addDoc, serverTimestamp, deleteDoc, doc } from 'firebase/firestore'
+import { collection, query, where, getDocs, addDoc, serverTimestamp, deleteDoc, doc, getDoc } from 'firebase/firestore'
 import Login from './Login'
 import Dashboard from './Dashboard'
 import AllocateBudget from './AllocateBudget'
@@ -9,6 +9,7 @@ import PaycheckHistory from './PaycheckHistory'
 import EditPaycheck from './EditPaycheck'
 import TransactionHistory from './TransactionHistory'
 import EditTransaction from './EditTransaction'
+import CategoryManager from './CategoryManager'
 import { samplePaycheck } from './sampleData'
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
   const [editingPaycheck, setEditingPaycheck] = useState(null)
   const [showTransactionHistory, setShowTransactionHistory] = useState(false)
   const [editingTransaction, setEditingTransaction] = useState(null)
+  const [showCategoryManager, setShowCategoryManager] = useState(false)
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -70,20 +72,37 @@ function App() {
   const handleCreatePaycheck = async (e) => {
     e.preventDefault()
     const amount = parseFloat(paycheckAmount)
-    
+
     if (!amount || amount <= 0) {
       alert('Please enter a valid amount')
       return
     }
 
     try {
+      // Load custom categories or use defaults
+      let bucketsToUse = samplePaycheck.buckets
+
+      try {
+        const settingsRef = doc(db, 'users', user.uid, 'settings', 'categories')
+        const settingsDoc = await getDoc(settingsRef)
+
+        if (settingsDoc.exists()) {
+          bucketsToUse = settingsDoc.data().buckets
+        }
+      } catch (err) {
+        // If error loading custom categories, use defaults
+        console.log('Using default categories')
+      }
+
       // Create new paycheck with allocated amounts set to 0
       const paycheckData = {
         amount: amount,
         date: serverTimestamp(),
         status: 'pending_allocation',
-        buckets: samplePaycheck.buckets.map(bucket => ({
-          ...bucket,
+        buckets: bucketsToUse.map(bucket => ({
+          id: bucket.id,
+          name: bucket.name,
+          percentage: bucket.percentage,
           amount: (bucket.percentage / 100) * amount,
           categories: bucket.categories.map(category => ({
             ...category,
@@ -145,6 +164,11 @@ function App() {
         <div>
           {budgetLoading ? (
             <p>Loading budget...</p>
+          ) : showCategoryManager ? (
+            <CategoryManager
+              user={user}
+              onBack={() => setShowCategoryManager(false)}
+            />
           ) : editingTransaction ? (
             <EditTransaction
               user={user}
@@ -212,6 +236,9 @@ function App() {
               </button>
               <button onClick={() => setShowTransactionHistory(true)} style={{ marginTop: '20px', marginRight: '10px' }}>
                 Transaction History
+              </button>
+              <button onClick={() => setShowCategoryManager(true)} style={{ marginTop: '20px', marginRight: '10px' }}>
+                Manage Categories
               </button>
               <button onClick={clearAllData} style={{ marginTop: '20px', marginRight: '10px', backgroundColor: '#ff6b6b', color: 'white' }}>
                 Clear All Data (Testing)
