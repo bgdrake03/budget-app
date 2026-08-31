@@ -14,6 +14,7 @@ function App() {
   const [budgetLoading, setBudgetLoading] = useState(false)
   const [newPaycheck, setNewPaycheck] = useState(null)
   const [paycheckAmount, setPaycheckAmount] = useState('')
+  const [showCreateForm, setShowCreateForm] = useState(false)
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -118,10 +119,34 @@ function App() {
             <p>Loading budget...</p>
           ) : newPaycheck ? (
             <AllocateBudget user={user} paycheck={newPaycheck} onAllocationComplete={handleAllocationComplete} />
+          ) : showCreateForm ? (
+            <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px' }}>
+              <h1>Budget App</h1>
+              <h2>Create New Paycheck</h2>
+              <form onSubmit={handleCreatePaycheck}>
+                <div>
+                  <label>Paycheck Amount: $</label>
+                  <input
+                    type="number"
+                    value={paycheckAmount}
+                    onChange={(e) => setPaycheckAmount(e.target.value)}
+                    placeholder="0.00"
+                    step="0.01"
+                  />
+                </div>
+                <button type="submit">Create Paycheck</button>
+                <button type="button" onClick={() => setShowCreateForm(false)} style={{ marginLeft: '10px' }}>
+                  Cancel
+                </button>
+              </form>
+            </div>
           ) : budget ? (
             <>
               <Dashboard user={user} budget={budget} onBudgetUpdate={() => loadUserBudget(user.uid)} />
-              <button onClick={handleLogout} style={{ marginTop: '20px' }}>
+              <button onClick={() => setShowCreateForm(true)} style={{ marginTop: '20px', marginRight: '10px' }}>
+                New Paycheck
+              </button>
+              <button onClick={handleLogout}>
                 Log Out
               </button>
             </>
