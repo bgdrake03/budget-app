@@ -137,10 +137,16 @@ label {
 /* Cards/Sections */
 div[style*="border: 1px solid"] {
   background-color: var(--surface);
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 20px;
   box-shadow: var(--shadow);
   margin-bottom: 20px;
+  border: none !important;
+  transition: box-shadow 0.3s ease;
+}
+
+div[style*="border: 1px solid"]:hover {
+  box-shadow: var(--shadow-lg);
 }
 
 /* Lists - Remove bullets */
@@ -161,7 +167,19 @@ li:last-child {
 }
 
 /* Text alignment */
-h1, h2, h3 {
+h1 {
+  text-align: center;
+}
+
+/* Card headings */
+div[style*="border: 1px solid"] h2,
+div[style*="border: 1px solid"] h3 {
+  text-align: center;
+  color: var(--primary);
+  margin-top: 0;
+}
+
+div[style*="border: 1px solid"] p {
   text-align: center;
 }
 
