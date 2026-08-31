@@ -229,24 +229,26 @@ function App() {
           ) : budget ? (
             <>
               <Dashboard user={user} budget={budget} onBudgetUpdate={() => loadUserBudget(user.uid)} />
-              <button onClick={() => setShowCreateForm(true)} style={{ marginTop: '20px', marginRight: '10px' }}>
-                New Paycheck
-              </button>
-              <button onClick={() => setShowPaycheckHistory(true)} style={{ marginTop: '20px', marginRight: '10px' }}>
-                Paycheck History
-              </button>
-              <button onClick={() => setShowTransactionHistory(true)} style={{ marginTop: '20px', marginRight: '10px' }}>
-                Transaction History
-              </button>
-              <button onClick={() => setShowCategoryManager(true)} style={{ marginTop: '20px', marginRight: '10px' }}>
-                Manage Categories
-              </button>
-              <button onClick={clearAllData} style={{ marginTop: '20px', marginRight: '10px', backgroundColor: '#EC4899', color: 'white' }}>
-                Clear All Data (Testing)
-              </button>
-              <button onClick={handleLogout} style={{ marginTop: '20px' }}>
-                Log Out
-              </button>
+              <div className="dashboard-buttons">
+                <button onClick={() => setShowCreateForm(true)}>
+                  New Paycheck
+                </button>
+                <button onClick={() => setShowPaycheckHistory(true)}>
+                  Paycheck History
+                </button>
+                <button onClick={() => setShowTransactionHistory(true)}>
+                  Transaction History
+                </button>
+                <button onClick={() => setShowCategoryManager(true)}>
+                  Manage Categories
+                </button>
+                <button onClick={clearAllData} style={{ backgroundColor: '#EC4899', color: 'white' }}>
+                  Clear All Data (Testing)
+                </button>
+                <button onClick={handleLogout}>
+                  Log Out
+                </button>
+              </div>
             </>
           ) : (
             <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px' }}>

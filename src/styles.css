@@ -210,6 +210,18 @@ div:has(> button) {
   flex: 1;
 }
 
+/* Dashboard Buttons */
+.dashboard-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.dashboard-buttons button {
+  width: 100%;
+}
+
 /* Desktop Layout - Stacked with better spacing */
 @media (min-width: 1024px) {
   .dashboard-buckets {
@@ -222,6 +234,18 @@ div:has(> button) {
   /* Budgeting Needs (2nd bucket) spans all rows on right */
   .dashboard-buckets > div:nth-child(2) {
     grid-row: 1 / 4;
+  }
+
+  /* Desktop button grid - 3 columns */
+  .dashboard-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-top: 30px;
+  }
+
+  .dashboard-buttons button {
+    width: 100%;
   }
 }
 
