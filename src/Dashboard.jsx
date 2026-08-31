@@ -1,14 +1,12 @@
 import { useState } from 'react'
 import { db } from './firebase'
-import { doc, updateDoc, collection, addDoc } from 'firebase/firestore'
-import { samplePaycheck } from './sampleData'
+import { doc, updateDoc } from 'firebase/firestore'
 
 function Dashboard({ user, budget, onBudgetUpdate }) {
   const [selectedCategoryId, setSelectedCategoryId] = useState(null)
   const [spendAmount, setSpendAmount] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [showNewPaycheck, setShowNewPaycheck] = useState(false)
 
   const handleSpend = async (categoryId, amount) => {
     setLoading(true)
@@ -55,17 +53,6 @@ function Dashboard({ user, budget, onBudgetUpdate }) {
     <div>
       <h1>Budget Dashboard</h1>
       <p>Total Income: ${budget.amount.toFixed(2)}</p>
-      
-      <button onClick={() => setShowNewPaycheck(!showNewPaycheck)} style={{ marginBottom: '20px' }}>
-        New Paycheck
-      </button>
-
-      {showNewPaycheck && (
-        <NewPaycheckForm user={user} onPaycheckCreated={() => {
-          setShowNewPaycheck(false)
-          onBudgetUpdate()
-        }} />
-      )}
 
       {/* SPENDING FORM */}
       <div style={{ marginBottom: '20px', padding: '10px', border: '1px solid gray' }}>
@@ -113,75 +100,13 @@ function Dashboard({ user, budget, onBudgetUpdate }) {
             <ul>
               {bucket.categories.map((category) => (
                 <li key={category.id}>
-                  {category.name}: ${category.budget} (Remaining: ${category.budget - category.spent})
+                  {category.name}: ${category.allocated} (Spent: ${category.spent}, Remaining: ${category.allocated - category.spent})
                 </li>
               ))}
             </ul>
           </div>
         ))}
       </div>
-    </div>
-  )
-}
-
-function NewPaycheckForm({ user, onPaycheckCreated }) {
-  const [amount, setAmount] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
-
-    try {
-      const paycheckAmount = parseFloat(amount)
-      if (!paycheckAmount || paycheckAmount <= 0) {
-        setError('Please enter a valid amount')
-        return
-      }
-
-      const newBudget = {
-        amount: paycheckAmount,
-        date: new Date(),
-        status: 'active',
-        buckets: samplePaycheck.buckets.map(bucket => ({
-          ...bucket,
-          amount: (bucket.percentage / 100) * paycheckAmount,
-          categories: bucket.categories.map(category => ({
-            ...category,
-            spent: 0
-          }))
-        }))
-      }
-
-      await addDoc(collection(db, 'users', user.uid, 'budgets'), newBudget)
-
-      setAmount('')
-      onPaycheckCreated()
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return (
-    <div style={{ marginBottom: '20px', padding: '10px', border: '1px solid blue' }}>
-      <h3>Create New Paycheck</h3>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="number"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          placeholder="Paycheck amount"
-          step="0.01"
-        />
-        <button type="submit" disabled={loading}>
-          {loading ? 'Creating...' : 'Create'}
-        </button>
-      </form>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
     </div>
   )
 }
