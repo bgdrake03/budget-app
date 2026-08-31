@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { db } from './firebase'
 import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore'
 
-function TransactionHistory({ user, onBack, onSelectTransaction }) {
+function TransactionHistory({ user, onBack, onSelectTransaction, onTransactionDelete }) {
   const [transactions, setTransactions] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -53,6 +53,9 @@ function TransactionHistory({ user, onBack, onSelectTransaction }) {
         doc(db, 'users', user.uid, 'budgets', budgetId, 'transactions', transactionId)
       )
       setTransactions(transactions.filter(t => t.id !== transactionId))
+      if (onTransactionDelete) {
+        onTransactionDelete()
+      }
     } catch (err) {
       setError(err.message)
     }

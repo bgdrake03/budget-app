@@ -226,6 +226,7 @@ function App() {
               user={user}
               onBack={() => setShowTransactionHistory(false)}
               onSelectTransaction={(transaction) => setEditingTransaction(transaction)}
+              onTransactionDelete={() => loadUserBudget(user.uid)}
             />
           ) : editingPaycheck ? (
             <EditPaycheck
