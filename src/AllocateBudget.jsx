@@ -12,6 +12,12 @@ function AllocateBudget({ user, paycheck, onAllocationComplete }) {
       return acc
     }, {})
   )
+  const [bucketAmounts, setBucketAmounts] = useState(
+    paycheck.buckets.reduce((acc, bucket) => {
+      acc[bucket.id] = bucket.amount
+      return acc
+    }, {})
+  )
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -25,9 +31,15 @@ function AllocateBudget({ user, paycheck, onAllocationComplete }) {
     }))
   }
 
+  const handleBucketAmountChange = (bucketId, value) => {
+    setBucketAmounts(prev => ({
+      ...prev,
+      [bucketId]: parseFloat(value) || 0
+    }))
+  }
+
   const getBucketTotal = (bucketId) => {
-    const bucket = paycheck.buckets.find(b => b.id === bucketId)
-    return bucket ? bucket.amount : 0
+    return bucketAmounts[bucketId] || 0
   }
 
   const getAllocatedTotal = (bucketId) => {
@@ -52,9 +64,10 @@ function AllocateBudget({ user, paycheck, onAllocationComplete }) {
     setError('')
 
     try {
-      // Update budget with allocations
+      // Update budget with allocations and bucket amounts
       const updatedBuckets = paycheck.buckets.map(bucket => ({
         ...bucket,
+        amount: bucketAmounts[bucket.id],
         categories: bucket.categories.map(category => ({
           ...category,
           allocated: allocations[bucket.id][category.id] || 0
@@ -83,7 +96,20 @@ function AllocateBudget({ user, paycheck, onAllocationComplete }) {
       {paycheck.buckets.map((bucket) => (
         <div key={bucket.id} style={{ marginBottom: '30px', padding: '15px', border: '1px solid gray' }}>
           <h2>{bucket.name}</h2>
-          <p>Bucket Total: ${getBucketTotal(bucket.id).toFixed(2)}</p>
+          <div style={{ marginBottom: '15px' }}>
+            <label>Bucket Total: $</label>
+            <input
+              type="number"
+              value={bucketAmounts[bucket.id] || ''}
+              onChange={(e) => handleBucketAmountChange(bucket.id, e.target.value)}
+              placeholder="0.00"
+              step="0.01"
+              style={{ width: '120px', marginLeft: '5px' }}
+            />
+            <p style={{ fontSize: '12px', color: 'gray', marginTop: '5px' }}>
+              (Originally: ${bucket.amount.toFixed(2)})
+            </p>
+          </div>
 
           <div style={{ marginLeft: '20px' }}>
             {bucket.categories.map((category) => (
