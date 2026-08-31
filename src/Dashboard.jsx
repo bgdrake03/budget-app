@@ -125,7 +125,7 @@ function Dashboard({ user, budget, onBudgetUpdate }) {
       {/* BUDGET DISPLAY */}
       <div>
         {budget.buckets.map((bucket) => (
-          <div key={bucket.id}>
+          <div key={bucket.id} style={{ marginBottom: '20px', padding: '20px', border: '1px solid #e0e0e0', borderRadius: '12px', backgroundColor: '#ffffff', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
             <h2>{bucket.name}</h2>
             <p>Total: ${bucket.amount.toFixed(2)}</p>
 
