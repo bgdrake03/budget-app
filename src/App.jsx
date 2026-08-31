@@ -46,12 +46,48 @@ function App() {
         where('isCurrent', '==', true)
       )
       const snapshot = await getDocs(q)
-      
+
       if (!snapshot.empty) {
-        const budgetData = snapshot.docs[0]
+        let budgetData = snapshot.docs[0].data()
+
+        // Load settings categories to merge updated goals/types
+        try {
+          const settingsRef = doc(db, 'users', userId, 'settings', 'categories')
+          const settingsDoc = await getDoc(settingsRef)
+
+          if (settingsDoc.exists()) {
+            const settingsBuckets = settingsDoc.data().buckets
+
+            // Merge settings into budget categories
+            budgetData = {
+              ...budgetData,
+              buckets: budgetData.buckets.map(bucket => {
+                const settingsBucket = settingsBuckets.find(sb => sb.id === bucket.id)
+                if (!settingsBucket) return bucket
+
+                return {
+                  ...bucket,
+                  categories: bucket.categories.map(category => {
+                    const settingsCategory = settingsBucket.categories.find(sc => sc.id === category.id)
+                    if (!settingsCategory) return category
+
+                    return {
+                      ...category,
+                      type: settingsCategory.type || 'spending',
+                      goal: settingsCategory.goal
+                    }
+                  })
+                }
+              })
+            }
+          }
+        } catch (err) {
+          console.log('Could not load settings categories:', err)
+        }
+
         setBudget({
-          id: budgetData.id,
-          ...budgetData.data()
+          id: snapshot.docs[0].id,
+          ...budgetData
         })
       } else {
         setBudget(null)
