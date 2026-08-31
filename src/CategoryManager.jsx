@@ -9,6 +9,9 @@ function CategoryManager({ user, onBack }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
+  const [editingCategory, setEditingCategory] = useState(null)
+  const [editType, setEditType] = useState('spending')
+  const [editGoal, setEditGoal] = useState('')
 
   useEffect(() => {
     loadCategories()
@@ -49,11 +52,12 @@ function CategoryManager({ user, onBack }) {
     const updatedCategories = categories.map(bucket => {
       if (bucket.id === bucketId) {
         const newId = Math.max(...bucket.categories.map(c => c.id), 0) + 1
+        const newCategory = { id: newId, name: categoryName, type: 'spending' }
         return {
           ...bucket,
           categories: [
             ...bucket.categories,
-            { id: newId, name: categoryName }
+            newCategory
           ]
         }
       }
@@ -62,6 +66,50 @@ function CategoryManager({ user, onBack }) {
 
     setCategories(updatedCategories)
     setNewCategoryName({ ...newCategoryName, [bucketId]: '' })
+    await saveCategories(updatedCategories)
+  }
+
+  const handleEditType = async (bucketId, categoryId, newType) => {
+    const updatedCategories = categories.map(bucket => {
+      if (bucket.id === bucketId) {
+        return {
+          ...bucket,
+          categories: bucket.categories.map(cat => {
+            if (cat.id === categoryId) {
+              const updated = { ...cat, type: newType }
+              if (newType === 'savings' && !updated.goal) {
+                updated.goal = 0
+              }
+              return updated
+            }
+            return cat
+          })
+        }
+      }
+      return bucket
+    })
+
+    setCategories(updatedCategories)
+    await saveCategories(updatedCategories)
+  }
+
+  const handleEditGoal = async (bucketId, categoryId, newGoal) => {
+    const updatedCategories = categories.map(bucket => {
+      if (bucket.id === bucketId) {
+        return {
+          ...bucket,
+          categories: bucket.categories.map(cat => {
+            if (cat.id === categoryId) {
+              return { ...cat, goal: parseFloat(newGoal) || 0 }
+            }
+            return cat
+          })
+        }
+      }
+      return bucket
+    })
+
+    setCategories(updatedCategories)
     await saveCategories(updatedCategories)
   }
 
@@ -124,21 +172,46 @@ function CategoryManager({ user, onBack }) {
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
-                      padding: '8px',
+                      padding: '12px',
                       marginBottom: '8px',
                       backgroundColor: '#f5f5f5',
-                      borderRadius: '4px'
+                      borderRadius: '4px',
+                      flexWrap: 'wrap',
+                      gap: '8px'
                     }}
                   >
-                    <span>{category.name}</span>
+                    <div style={{ flex: 1, minWidth: '150px' }}>
+                      <p style={{ margin: 0, fontWeight: 500, marginBottom: '4px' }}>{category.name}</p>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <select
+                          value={category.type || 'spending'}
+                          onChange={(e) => handleEditType(bucket.id, category.id, e.target.value)}
+                          style={{ padding: '4px 8px', fontSize: '12px', cursor: 'pointer' }}
+                        >
+                          <option value="spending">Spending</option>
+                          <option value="savings">Savings</option>
+                        </select>
+                        {category.type === 'savings' && (
+                          <input
+                            type="number"
+                            placeholder="Goal"
+                            value={category.goal || ''}
+                            onChange={(e) => handleEditGoal(bucket.id, category.id, e.target.value)}
+                            style={{ padding: '4px 8px', fontSize: '12px', width: '80px' }}
+                          />
+                        )}
+                      </div>
+                    </div>
                     <button
                       onClick={() => handleDeleteCategory(bucket.id, category.id)}
                       style={{
-                        backgroundColor: '#ff6b6b',
+                        backgroundColor: '#EC4899',
                         color: 'white',
-                        padding: '4px 8px',
+                        padding: '6px 12px',
                         fontSize: '12px',
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        borderRadius: '4px',
+                        border: 'none'
                       }}
                     >
                       Delete

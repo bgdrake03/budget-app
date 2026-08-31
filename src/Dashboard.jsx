@@ -10,6 +10,16 @@ function Dashboard({ user, budget, onBudgetUpdate }) {
   const [error, setError] = useState('')
 
   const getCategoryStatus = (category) => {
+    const isSavings = category.type === 'savings'
+
+    if (isSavings) {
+      if (!category.goal) return 'not-allocated'
+      const goalProgress = category.allocated / category.goal
+      if (goalProgress >= 1) return 'healthy'
+      if (goalProgress >= 0.75) return 'warning'
+      return 'healthy'
+    }
+
     if (category.allocated === 0) {
       return 'not-allocated'
     }
@@ -32,6 +42,18 @@ function Dashboard({ user, budget, onBudgetUpdate }) {
   }
 
   const getStatusMessage = (category) => {
+    const isSavings = category.type === 'savings'
+
+    if (isSavings) {
+      if (!category.goal) return 'No goal set'
+      const remaining = category.goal - category.allocated
+      const percentProgress = Math.round((category.allocated / category.goal) * 100)
+      if (percentProgress >= 100) {
+        return `✓ Goal reached! +$${Math.abs(remaining).toFixed(2)}`
+      }
+      return `$${remaining.toFixed(2)} toward goal`
+    }
+
     if (category.allocated === 0) {
       return 'Not allocated'
     }
@@ -60,6 +82,13 @@ function Dashboard({ user, budget, onBudgetUpdate }) {
   }
 
   const getSpentPercentage = (category) => {
+    const isSavings = category.type === 'savings'
+
+    if (isSavings) {
+      if (!category.goal) return 0
+      return Math.min((category.allocated / category.goal) * 100, 120)
+    }
+
     if (category.allocated === 0) return 0
     return Math.min((category.spent / category.allocated) * 100, 120)
   }
@@ -247,7 +276,10 @@ Would you like to proceed anyway? (You can re-allocate your budget later.)`
                         <div style={{ width: `${Math.min(percentage, 100)}%`, height: '100%', backgroundColor: color }}></div>
                       </div>
                       <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>
-                        ${category.spent.toFixed(2)} / ${category.allocated.toFixed(2)}
+                        {category.type === 'savings'
+                          ? `$${category.allocated.toFixed(2)} / $${(category.goal || 0).toFixed(2)}`
+                          : `$${category.spent.toFixed(2)} / $${category.allocated.toFixed(2)}`
+                        }
                       </p>
                     </div>
                   )
