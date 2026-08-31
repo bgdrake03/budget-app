@@ -119,7 +119,7 @@ function Dashboard({ user, budget, onBudgetUpdate }) {
             {loading ? 'Saving...' : 'Log Spending'}
           </button>
         </form>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {error && <p style={{ color: '#EC4899' }}>{error}</p>}
       </div>
 
       {/* BUDGET DISPLAY */}

@@ -79,7 +79,7 @@ function PaycheckHistory({ user, onSelectPaycheck, onBack }) {
             >
               <h3>
                 ${paycheck.amount.toFixed(2)} {' '}
-                <span style={{ fontSize: '14px', color: paycheck.isCurrent ? 'green' : 'gray' }}>
+                <span style={{ fontSize: '14px', color: paycheck.isCurrent ? '#10B981' : '#9CA3AF' }}>
                   ({paycheck.isCurrent ? 'Current' : 'Inactive'})
                 </span>
               </h3>
@@ -87,7 +87,7 @@ function PaycheckHistory({ user, onSelectPaycheck, onBack }) {
                 {paycheck.date?.toDate?.()?.toLocaleDateString() || 'Date not available'}
               </p>
               <div>
-                <button onClick={() => handleSetCurrent(paycheck)} style={{ marginRight: '5px', backgroundColor: paycheck.isCurrent ? '#4CAF50' : '#2196F3', color: 'white', cursor: 'pointer' }} disabled={updating}>
+                <button onClick={() => handleSetCurrent(paycheck)} style={{ marginRight: '5px', backgroundColor: paycheck.isCurrent ? '#10B981' : '#7C3AED', color: 'white', cursor: 'pointer' }} disabled={updating}>
                   {paycheck.isCurrent ? '✓ Current' : 'Set as Current'}
                 </button>
                 <button onClick={(e) => {

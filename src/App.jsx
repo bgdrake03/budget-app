@@ -241,7 +241,7 @@ function App() {
               <button onClick={() => setShowCategoryManager(true)} style={{ marginTop: '20px', marginRight: '10px' }}>
                 Manage Categories
               </button>
-              <button onClick={clearAllData} style={{ marginTop: '20px', marginRight: '10px', backgroundColor: '#ff6b6b', color: 'white' }}>
+              <button onClick={clearAllData} style={{ marginTop: '20px', marginRight: '10px', backgroundColor: '#EC4899', color: 'white' }}>
                 Clear All Data (Testing)
               </button>
               <button onClick={handleLogout} style={{ marginTop: '20px' }}>

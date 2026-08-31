@@ -5,20 +5,21 @@
 }
 
 :root {
-  --primary: #2196F3;
-  --primary-dark: #1976D2;
-  --success: #4CAF50;
-  --success-dark: #388E3C;
-  --danger: #f44336;
-  --danger-dark: #d32f2f;
-  --warning: #ff9800;
-  --background: #f5f5f5;
-  --surface: #ffffff;
-  --text-primary: #212121;
-  --text-secondary: #757575;
-  --border: #e0e0e0;
-  --shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.15);
+  --primary: #7C3AED;
+  --primary-dark: #6D28D9;
+  --success: #10B981;
+  --success-dark: #059669;
+  --danger: #EC4899;
+  --danger-dark: #DB2777;
+  --warning: #F59E0B;
+  --background: #F8FAFC;
+  --surface: #FFFFFF;
+  --text-primary: #1F2937;
+  --text-secondary: #6B7280;
+  --border: #E5E7EB;
+  --accent: #EC4899;
+  --shadow: 0 2px 8px rgba(124, 58, 237, 0.08);
+  --shadow-lg: 0 4px 12px rgba(124, 58, 237, 0.12);
 }
 
 body {
@@ -99,12 +100,13 @@ button:disabled {
 
 /* Primary Button */
 button:not([style*="background"]) {
-  background-color: var(--primary);
+  background: linear-gradient(135deg, var(--primary) 0%, #A78BFA 100%);
   color: white;
+  border: none;
 }
 
 button:not([style*="background"]):hover {
-  background-color: var(--primary-dark);
+  background: linear-gradient(135deg, var(--primary-dark) 0%, #9370DB 100%);
 }
 
 /* Forms */
@@ -124,7 +126,7 @@ input, textarea, select {
 input:focus, textarea:focus, select:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
 }
 
 label {
