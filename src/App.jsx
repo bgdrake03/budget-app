@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { auth, db } from './firebase'
 import { onAuthStateChanged, signOut } from 'firebase/auth'
-import { collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore'
+import { collection, query, where, getDocs, addDoc, serverTimestamp, deleteDoc, doc } from 'firebase/firestore'
 import Login from './Login'
 import Dashboard from './Dashboard'
 import AllocateBudget from './AllocateBudget'
@@ -111,6 +111,26 @@ function App() {
     loadUserBudget(user.uid)
   }
 
+  const clearAllData = async () => {
+    if (!window.confirm('Are you sure? This will delete ALL paychecks. This cannot be undone.')) {
+      return
+    }
+
+    try {
+      const querySnapshot = await getDocs(collection(db, 'users', user.uid, 'budgets'))
+
+      for (const docSnap of querySnapshot.docs) {
+        await deleteDoc(doc(db, 'users', user.uid, 'budgets', docSnap.id))
+      }
+
+      setBudget(null)
+      setNewPaycheck(null)
+      alert('All data cleared!')
+    } catch (err) {
+      alert('Error clearing data: ' + err.message)
+    }
+  }
+
   if (loading) {
     return <p>Loading...</p>
   }
@@ -170,7 +190,10 @@ function App() {
               <button onClick={() => setShowPaycheckHistory(true)} style={{ marginTop: '20px', marginRight: '10px' }}>
                 Paycheck History
               </button>
-              <button onClick={handleLogout}>
+              <button onClick={clearAllData} style={{ marginTop: '20px', marginRight: '10px', backgroundColor: '#ff6b6b', color: 'white' }}>
+                Clear All Data (Testing)
+              </button>
+              <button onClick={handleLogout} style={{ marginTop: '20px' }}>
                 Log Out
               </button>
             </>
